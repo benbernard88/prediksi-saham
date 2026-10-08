@@ -17,7 +17,7 @@ st.set_page_config(page_title="AI Trading Pro", layout="wide")
 # SIDEBAR AFILIASI (MONETISASI)
 # ==========================================
 st.sidebar.title("🤝 Mitra Resmi")
-st.sidebar.success("""
+st.sidebar.markdown("""
 **Siap Mencetak Profit Hari Ini?** 🚀
 
 Jangan biarkan hasil analisis AI ini sia-sia! Langsung eksekusi pembelian saham Anda di aplikasi sekuritas berizin OJK. 
@@ -133,14 +133,15 @@ tab_screener, tab_individu = st.tabs(["🚀 Auto-Screener LQ45 (Top 45 BEI)", "�
 # TAB 1: SCREENER (LQ45)
 # ==========================================
 with tab_screener:
-    st.header("Radar Pasar (Top 45 Saham Likuid - LQ45)")
+    st.markdown("<br>", unsafe_allow_html=True)
     st.write("AI akan mengecek 45 saham paling aktif di bursa secara bersamaan untuk mencari sinyal beli terbaik.")
     
     col_scr1, col_scr2 = st.columns([1, 3])
     with col_scr1:
         screener_model = st.selectbox("Model AI untuk Screener", ["Random Forest", "Deep Learning (Neural Network)"])
     
-    if st.button("Mulai Pindai 45 Saham (Scan Market)", type="primary"):
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("Mulai Pindai 45 Saham (Scan Market)", type="primary", use_container_width=True):
         hasil_scan = []
         progress_bar = st.progress(0)
         status_text = st.empty()
@@ -184,6 +185,8 @@ with tab_screener:
         df_hasil = pd.DataFrame(hasil_scan)
         if not df_hasil.empty:
             df_hasil = df_hasil.sort_values(by=["_Skor", "Akurasi AI"], ascending=[False, False]).drop(columns=["_Skor"]).reset_index(drop=True)
+            df_hasil.index = df_hasil.index + 1  # Ubah indeks mulai dari 1
+            df_hasil.index.name = "Rank"         # Beri nama kolom indeks
             st.dataframe(df_hasil, use_container_width=True)
         else:
             st.warning("Gagal menarik data pasar (Pastikan koneksi internet stabil).")
@@ -193,28 +196,33 @@ with tab_screener:
 # TAB 2: ANALISIS BEBAS (SEMUA SAHAM)
 # ==========================================
 with tab_individu:
-    st.header("Analisis Bebas (Mendukung 900+ Saham BEI)")
+    st.markdown("<br>", unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        ticker_input = st.text_input("Ketik Kode Saham BEI (WAJIB diakhiri .JK, misal: BREN.JK, CUAN.JK, AMMN.JK)", value="BBCA.JK")
+        # Teks diperpendek agar sejajar dan rapi
+        ticker_input = st.text_input("Kode Saham (Contoh: BBCA, BREN)", value="BBCA")
         ticker = ticker_input.strip().upper()
+        # Otomatis menambahkan .JK di belakang layar
         if not ticker.endswith(".JK") and len(ticker) == 4:
             ticker = ticker + ".JK"
             
     with col2:
-        period = st.selectbox("Periode", ["1y", "2y", "5y", "10y"], index=2)
+        period = st.selectbox("Periode Waktu", ["1y", "2y", "5y", "10y"], index=2)
     with col3:
-        model_choice = st.selectbox("Model AI", ["Random Forest", "Deep Learning (Neural Network)"], key="ind_model")
+        model_choice = st.selectbox("Algoritma AI", ["Random Forest", "Deep Learning (Neural Network)"], key="ind_model")
 
-    if st.button("Jalankan Analisis Pro Individual"):
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Tombol dilebarkan agar simetris
+    if st.button("Jalankan Analisis Individual", type="primary", use_container_width=True):
         with st.spinner(f"Menarik Data Fundamental & Harga {ticker}..."):
             saham_obj = yf.Ticker(ticker)
             info = saham_obj.info
             data = saham_obj.history(period=period)
             
             if data.empty:
-                st.error(f"Data harga untuk {ticker} tidak ditemukan. Pastikan kodenya benar dan ditambah .JK di akhir.")
+                st.error(f"Data harga untuk {ticker} tidak ditemukan. Pastikan kodenya benar.")
             else:
                 st.success("Data berhasil diunduh!")
                 
