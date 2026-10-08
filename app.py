@@ -229,19 +229,27 @@ with tab_individu:
                 st.markdown("### 🏢 Data Fundamental Perusahaan")
                 col_f1, col_f2, col_f3, col_f4 = st.columns(4)
                 
-                mcap = info.get("marketCap", "N/A")
-                if mcap != "N/A": mcap = f"Rp {mcap/1e12:,.1f} Triliun"
+                # Menggunakan fallback ke fast_info jika info biasa diblokir oleh Yahoo
+                try:
+                    mcap_raw = info.get("marketCap") or saham_obj.fast_info.get("marketCap")
+                    if mcap_raw:
+                        mcap = f"Rp {mcap_raw/1e12:,.1f} Triliun"
+                    else:
+                        mcap = "N/A"
+                except Exception:
+                    mcap = "N/A"
                 
-                pe_ratio = info.get("trailingPE", "N/A")
-                if pe_ratio != "N/A": pe_ratio = f"{pe_ratio:.2f}x"
+                pe_ratio = info.get("trailingPE", "N/A (Diblokir API)")
+                if isinstance(pe_ratio, (int, float)): 
+                    pe_ratio = f"{pe_ratio:.2f}x"
                 
                 div_yield = info.get("dividendYield", "N/A")
-                if div_yield != "N/A" and div_yield is not None: 
+                if isinstance(div_yield, (int, float)): 
                     div_yield = f"{div_yield*100:.2f}%"
                 else:
-                    div_yield = "N/A"
+                    div_yield = "N/A (Diblokir API)"
                     
-                sektor = info.get("sector", "N/A")
+                sektor = info.get("sector", "N/A (Diblokir API)")
                 
                 col_f1.metric("Market Cap (Kapitalisasi)", mcap)
                 col_f2.metric("P/E Ratio (Valuasi)", pe_ratio)
@@ -262,8 +270,8 @@ with tab_individu:
                                 name="Candlestick"))
                 fig.add_trace(go.Scatter(x=data.index, y=data['SMA_10'], line=dict(color='orange', width=1.5), name='SMA 10'))
                 fig.add_trace(go.Scatter(x=data.index, y=data['SMA_50'], line=dict(color='blue', width=1.5), name='SMA 50'))
-                fig.update_layout(xaxis_rangeslider_visible=False, height=500, margin=dict(l=0, r=0, t=30, b=0),
-                                  legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
+                fig.update_layout(xaxis_rangeslider_visible=False, height=500, margin=dict(l=0, r=0, t=50, b=0),
+                                  legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0))
                 st.plotly_chart(fig, use_container_width=True)
                 
                 with st.spinner('Memproses Kecerdasan Buatan...'):
