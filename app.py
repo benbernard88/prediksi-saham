@@ -13,8 +13,41 @@ warnings.filterwarnings('ignore')
 
 st.set_page_config(page_title="AI Trading Pro", layout="wide")
 
+# ==========================================
+# SIDEBAR AFILIASI (MONETISASI)
+# ==========================================
+st.sidebar.title("🤝 Mitra Resmi")
+st.sidebar.success("""
+**Siap Mencetak Profit Hari Ini?** 🚀
+
+Jangan biarkan hasil analisis AI ini sia-sia! Langsung eksekusi pembelian saham Anda di aplikasi sekuritas berizin OJK. 
+
+Dapatkan **BONUS SALDO atau KOIN GRATIS** khusus pengguna baru dengan mendaftar melalui tautan di bawah ini:
+
+📈 **[Daftar Ajaib Sekuritas](https://ajaib.co.id/)**
+*(Gunakan kode referral: **KODEMU-123**)*
+
+💼 **[Daftar Stockbit](https://stockbit.com/)**
+*(Gunakan kode referral: **KODEMU-456**)*
+
+---
+*Catatan: Kami akan menerima komisi apresiasi jika Anda mendaftar menggunakan tautan di atas, tanpa ada potongan biaya apapun dari saldo Anda.*
+""")
+st.sidebar.markdown("---")
+st.sidebar.markdown("© 2026 AI Trading Pro")
+
+# ==========================================
+# HALAMAN UTAMA
+# ==========================================
 st.title("📈 AI Trading Pro: LQ45 Screener & Full BEI Analysis")
 st.markdown("Aplikasi pintar ini dilengkapi dengan **Auto-Screener (Indeks LQ45)**, **Data Fundamental**, Grafik Candlestick, Prediksi AI, dan Backtesting Profit.")
+
+st.warning("""
+**⚠️ DISCLAIMER HUKUM & RISIKO FINANSIAL:**
+Semua data, analisis, dan prediksi AI yang ditampilkan di aplikasi ini hanya bertujuan sebagai **alat bantu edukasi dan informasi**. 
+Ini **BUKAN** merupakan saran keuangan, rekomendasi investasi, atau ajakan pasti untuk membeli/menjual saham tertentu. 
+Pasar saham memiliki risiko tinggi, dan Anda bertanggung jawab penuh atas segala keputusan finansial serta kerugian yang mungkin terjadi.
+""")
 
 # Daftar 45 Saham Paling Likuid di BEI (Indeks LQ45)
 LQ45_TICKERS = [
@@ -117,7 +150,6 @@ with tab_screener:
         for i, kode in enumerate(LQ45_TICKERS):
             status_text.text(f"Memindai {kode} ({i+1}/{total_saham})... Mohon tunggu sekitar 1-2 menit.")
             try:
-                # Ambil data 2 tahun
                 df_scan = yf.download(kode, period="2y", progress=False)
                 if df_scan.empty: continue
                 if isinstance(df_scan.columns, pd.MultiIndex):
@@ -140,12 +172,11 @@ with tab_screener:
                     "RSI": round(last_rsi, 1),
                     "Rekomendasi": aksi,
                     "Keterangan": alasan,
-                    "_Skor": skor # Kolom rahasia untuk sorting
+                    "_Skor": skor 
                 })
             except Exception as e:
                 pass
             
-            # Beri jeda sangat kecil agar tidak diblokir Yahoo
             time.sleep(0.1)
             progress_bar.progress((i + 1) / total_saham)
         
@@ -177,7 +208,6 @@ with tab_individu:
         model_choice = st.selectbox("Model AI", ["Random Forest", "Deep Learning (Neural Network)"], key="ind_model")
 
     if st.button("Jalankan Analisis Pro Individual"):
-        # 1. AMBIL DATA FUNDAMENTAL
         with st.spinner(f"Menarik Data Fundamental & Harga {ticker}..."):
             saham_obj = yf.Ticker(ticker)
             info = saham_obj.info
@@ -188,7 +218,6 @@ with tab_individu:
             else:
                 st.success("Data berhasil diunduh!")
                 
-                # Tampilkan Fundamental
                 st.markdown("### 🏢 Data Fundamental Perusahaan")
                 col_f1, col_f2, col_f3, col_f4 = st.columns(4)
                 
@@ -213,7 +242,6 @@ with tab_individu:
                 
                 st.markdown("---")
                 
-                # 2. GRAFIK CANDLESTICK
                 st.subheader(f"📊 Grafik Candlestick {ticker}")
                 
                 data['SMA_10'] = data['Close'].rolling(window=10).mean()
@@ -230,7 +258,6 @@ with tab_individu:
                                   legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
                 st.plotly_chart(fig, use_container_width=True)
                 
-                # 3. AI & BACKTESTING
                 with st.spinner('Memproses Kecerdasan Buatan...'):
                     hasil = hitung_indikator_dan_prediksi(data, model_choice)
                     if hasil is not None:
@@ -253,7 +280,6 @@ with tab_individu:
                         profit_df = pd.DataFrame({'Beli & Diam Biasa': cumulative_stock * 100, 'Mengikuti AI': cumulative_strategy * 100})
                         st.line_chart(profit_df)
                         
-                        # 4. KESIMPULAN
                         last_rsi = data_clean['RSI_14'].iloc[-1]
                         aksi, alasan, _ = dapatkan_rekomendasi(future_pred, last_rsi)
                         
